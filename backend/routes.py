@@ -1,10 +1,14 @@
-from flask import render_template, request, redirect, url_for
+from flask import render_template, request, redirect, url_for, flash
+from flask_login import login_user, login_required, logout_user, current_user
 from . import app, db, bcrypt
 from .models import User
+from .forms import RegistrationForm, LoginForm
+
 
 @app.route('/')
+@login_required
 def home():
-    return "Hello, World!"
+    return f"Hello, {current_user.username}!"
 
 @app.route('/register', methods=['GET', 'POST'])
 def register():
