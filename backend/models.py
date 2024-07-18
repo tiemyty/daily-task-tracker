@@ -1,13 +1,14 @@
 from __init__ import db
+from flask_login import UserMixin
 
 #define user model. primary key, username, email, password, and relationship to task
-class User(db.Model):
+class User(UserMixin, db.Model):
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(150), unique=True, nullable=False)
     email = db.Column(db.String(150), unique=True, nullable=False)
     password = db.Column(db.String(200), nullable=False)
     tasks = db.relationship('Task', backref='user', lazy=True)
-
+    
 #define task model
 class Task(db.Model):
     id = db.Column(db.Integer, primary_key=True)
