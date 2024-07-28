@@ -9,28 +9,62 @@
 <body>
     <div class="container">
         <h1>Create Task</h1>
-        <form id="taskForm" action="/create_task" method="post">
+        <form id="taskForm">
             <label for="name">Task Name:</label>
             <input type="text" id="name" name="name" required><br>
-        
             <label for="due_date">Due Date:</label>
             <input type="datetime-local" id="due_date" name="due_date" required><br>
-        
             <label for="priority">Priority:</label>
             <select id="priority" name="priority" required>
                 <option value="High">High</option>
                 <option value="Medium">Medium</option>
                 <option value="Low">Low</option>
             </select><br>
-        
             <label for="category">Category:</label>
             <select id="category" name="category" required>
                 <option value="Work">Work</option>
                 <option value="Personal">Personal</option>
             </select><br>
-        
             <input type="submit" value="Create Task">
         </form>
+
+        <h1>Edit Task</h1>
+        <form id="editTaskForm">
+            <input type="hidden" id="edit-task-id" name="task_id">
+            <label for="edit-name">Task Name:</label>
+            <input type="text" id="edit-name" name="name" required><br>
+            <label for="edit-due_date">Due Date:</label>
+            <input type="datetime-local" id="edit-due_date" name="due_date" required><br>
+            <label for="edit-priority">Priority:</label>
+            <select id="edit-priority" name="priority" required>
+                <option value="High">High</option>
+                <option value="Medium">Medium</option>
+                <option value="Low">Low</option>
+            </select><br>
+            <label for="edit-category">Category:</label>
+            <select id="edit-category" name="category" required>
+                <option value="Work">Work</option>
+                <option value="Personal">Personal</option>
+            </select><br>
+            <label for="edit-completed">Completed:</label>
+            <input type="checkbox" id="edit-completed" name="completed"><br>
+            <input type="submit" value="Update Task">
+        </form>
+
+        <h1>Task Notes</h1>
+        <div id="notesSection">
+            <form id="noteForm">
+                <label for="noteContent">Add Note:</label>
+                <textarea id="noteContent" name="content" required></textarea><br>
+                <input type="submit" value="Add Note">
+            </form>
+            <ul id="notesList"></ul>
+        </div>
+
+        <h1>Task List</h1>
+        <ul id="taskList">
+            <!--tasks will be populated here-->
+        </ul>
     </div>
     <script src="{{ url_for('static', filename='app.js') }}"></script>
 </body>

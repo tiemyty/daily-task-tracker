@@ -9,7 +9,7 @@
 from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
 from flask_bcrypt import Bcrypt
-from flask_login import LoginManager, UserMixin
+from flask_login import LoginManager
 from flask_cors import CORS #needed for cross data sharing
 
 #Initialize Flask application
@@ -25,17 +25,27 @@ db = SQLAlchemy(app)
 bcrypt = Bcrypt(app)
 login_manager = LoginManager(app)
 login_manager.login_view = 'login'  #redirect to login page if not logged in
+login_manager.login_message_category = 'info'
 
 @login_manager.user_loader
 def load_user(user_id):
+    from backend.models import User #avoid circular import
     return User.query.get(int(user_id))
 
+#home page
 @app.route('/')
 def index():
     return render_template('index.html')
 
-#import routes and models to register
-from backend import routes, models
+#create database tables
+with app.app_context():
+    print("Creating the database and tables...")
+    db.create_all()
+    print("Database and tables created successfully.")
+
+    
+#import routes
+from backend.routes import *
 
 #run flask in debug
 if __name__ == '__main__':
