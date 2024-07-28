@@ -151,12 +151,12 @@ def get_notes(task_id):
 
     return jsonify(notes_list), 200
 
-@app.route('/get_tasks', methods=['GET'])
-@login_required
-def get_tasks():
-    print("get_tasks route hit")#debug
-    tasks = Task.query.filter_by(user_id=current_user.id).all()
-    tasks_list = [{'id': task.id, 'name': task.name, 'due_date': task.due_date.isoformat(), 'priority': task.priority, 'category': task.category, 'completed': task.completed} for task in tasks]
-    return jsonify(tasks_list)
+#@app.route('/get_tasks', methods=['GET'])
+#@login_required
+#def get_tasks():
+ #   print("get_tasks route hit")#debug
+ #   tasks = Task.query.filter_by(user_id=current_user.id).all()
+  #  tasks_list = [{'id': task.id, 'name': task.name, 'due_date': task.due_date.isoformat(), 'priority': task.priority, 'category': task.category, 'completed': task.completed} for task in tasks]
+  #  return jsonify(tasks_list)
 
 print(app.url_map)#debug
