@@ -1,18 +1,19 @@
 #import necessary functions for flask 
-from flask import render_template, request, redirect, url_for, flash, jsonify
+from flask import Blueprint, render_template, request, redirect, url_for, flash, jsonify
 from flask_login import login_user, login_required, logout_user, current_user
-from __init__ import app, db, bcrypt
-from backend.models import User, Task, Note
+from backend import db, bcrypt
+from backend.models import User, Task, Note, Reminder
 from datetime import datetime
 
+bp = Blueprint('main', __name__)
+
 #home route that requires login
-@app.route('/')
-@login_required
+@bp.route('/')
 def home():
-    return f"Hello, {current_user.username}!"
+    return render_template('index.html')
 
 #registration route
-@app.route('/register', methods=['GET', 'POST'])
+@bp.route('/register', methods=['GET', 'POST'])
 def register():
     if request.method == 'POST':
         username = request.form['username']
@@ -21,11 +22,11 @@ def register():
         new_user = User(username=username, email=email, password=password)
         db.session.add(new_user)
         db.session.commit()
-        return redirect(url_for('login'))
+        return redirect(url_for('main.login'))
     return render_template('register.html')
 
 #login route
-@app.route('/login', methods=['GET', 'POST'])
+@bp.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
         email = request.form['email']
@@ -33,46 +34,34 @@ def login():
         user = User.query.filter_by(email=email).first()
         if user and bcrypt.check_password_hash(user.password, password):
             login_user(user)
-            return redirect(url_for('home'))
+            return redirect(url_for('main.home'))
         else:
             flash('Login Unsuccessful. Please check email and password', 'danger')
     return render_template('login.html')
 
 #logout route
-@app.route('/logout')
+@bp.route('/logout')
 @login_required
 def logout():
     logout_user()
-    return redirect(url_for('login'))
+    return redirect(url_for('main.login'))
 
 #create task route
-@app.route('/create_task', methods=['POST'])
+@bp.route('/create_task', methods=['POST'])
 #@login_required
 def create_task():
-    data = request.get_json()
-    print(f"Received data: {data}")
-
-    name = data.get('name')
-    due_date = data.get('due_date')
-    priority = data.get('priority')
-    category = data.get('category')
-   # user_id = current_user.id
-
-    if not all([name, due_date, priority, category]):
-        print("Missing data")
-        return jsonify({'message': 'Invalid data'}), 400
-    
-    user_id = 1 #hard coded user id to bypass login
-    due_date = datetime.fromisoformat(due_date)
-    
-    #create task
+    name = request.form.get('name')
+    due_date = request.form.get('due_date')
+    priority = request.form.get('priority')
+    category = request.form.get('category')
+    user_id = 1  #bypass temporarily
     new_task = Task(name=name, due_date=due_date, priority=priority, category=category, user_id=user_id)
     db.session.add(new_task)
     db.session.commit()
-    return jsonify({'message': 'Task created successfully'}), 201
+    return redirect(url_for('main.home'))
 
 #route for deletion
-@app.route('/delete_task/<int:task_id>', methods=['DELETE'])
+@bp.route('/delete_task/<int:task_id>', methods=['DELETE'])
 @login_required
 def delete_task(task_id):
     task = Task.query.get(task_id)
@@ -84,7 +73,7 @@ def delete_task(task_id):
         return jsonify({'message': 'Task not found'}), 404
     
 #route for editing a task
-@app.route('/edit_task/<int:task_id>', methods=['PUT'])
+@bp.route('/edit_task/<int:task_id>', methods=['PUT'])
 @login_required
 def edit_task(task_id):
     task = Task.query.get(task_id)
@@ -103,7 +92,7 @@ def edit_task(task_id):
 
 
 #route for retrieving a single task
-@app.route('/get_task/<int:task_id>', methods=['GET'])
+@bp.route('/get_task/<int:task_id>', methods=['GET'])
 @login_required
 def get_task(task_id):
     task = Task.query.get(task_id)
@@ -121,7 +110,7 @@ def get_task(task_id):
     return jsonify(task_data), 200
 
 #route for adding a note to a task
-@app.route('/add_note/<int:task_id>', methods=['POST'])
+@bp.route('/add_note/<int:task_id>', methods=['POST'])
 @login_required
 def add_note(task_id):
     task = Task.query.get(task_id)
@@ -139,7 +128,7 @@ def add_note(task_id):
 
 
 #route for retrieving notes of a task
-@app.route('/get_notes/<int:task_id>', methods=['GET'])
+@bp.route('/get_notes/<int:task_id>', methods=['GET'])
 @login_required
 def get_notes(task_id):
     task = Task.query.get(task_id)
@@ -148,15 +137,45 @@ def get_notes(task_id):
 
     notes = Note.query.filter_by(task_id=task.id).all()
     notes_list = [{'id': note.id, 'content': note.content} for note in notes]
-
     return jsonify(notes_list), 200
 
-#@app.route('/get_tasks', methods=['GET'])
-#@login_required
-#def get_tasks():
- #   print("get_tasks route hit")#debug
- #   tasks = Task.query.filter_by(user_id=current_user.id).all()
-  #  tasks_list = [{'id': task.id, 'name': task.name, 'due_date': task.due_date.isoformat(), 'priority': task.priority, 'category': task.category, 'completed': task.completed} for task in tasks]
-  #  return jsonify(tasks_list)
+#route for creating reminder
+@bp.route('/create_reminder', methods=['POST'])
+@login_required
+def create_reminder():
+    data = request.get_json()
+    task_id = data.get('task_id')
+    reminder_time = datetime.fromisoformat(data.get('reminder_time'))
+    message = data.get('message')
 
-print(app.url_map)#debug
+    new_reminder = Reminder(task_id=task_id, reminder_time=reminder_time, message=message)
+    db.session.add(new_reminder)
+    db.session.commit()
+    return jsonify({'message': 'Reminder created successfully'}), 201
+
+#route to get reminders
+@bp.route('/get_reminders/<int:task_id>', methods=['GET'])
+@login_required
+def get_reminders(task_id):
+    task = Task.query.get(task_id)
+    if not task or task.user_id != current_user.id:
+        return jsonify({'message': 'Task not found'}), 404
+
+    reminders = Reminder.query.filter_by(task_id=task_id).all()
+    reminders_list = [{'id': reminder.id, 'reminder_time': reminder.reminder_time.isoformat(), 'message': reminder.message} for reminder in reminders]
+    return jsonify(reminders_list), 200
+
+#get tasks
+@bp.route('/get_tasks', methods=['GET'])
+def get_tasks():
+    tasks = Task.query.all()
+    task_list = [{'id': task.id, 'name': task.name} for task in tasks]
+    return jsonify(task_list)
+
+#route to update tasks
+@bp.route('/tasks/<int:task_id>/update', methods=['POST'])
+def update_task(task_id):
+    task = Task.query.get_or_404(task_id)
+    task.failed = 'failed' in request.form  #updates based on failure
+    db.session.commit()
+    return redirect(url_for('tasks.list_tasks'))

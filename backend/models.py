@@ -1,4 +1,4 @@
-from __init__ import db
+from backend import db
 from flask_login import UserMixin
 from datetime import datetime
 
@@ -16,17 +16,23 @@ class Task(db.Model):
     name = db.Column(db.String(100), nullable=False)
     due_date = db.Column(db.DateTime, nullable=False, default=datetime)
     priority = db.Column(db.String(10), nullable=False)
-    category = db.Column(db.String(20), nullable=False)
+    category = db.Column(db.String(50), nullable=False)
     completed = db.Column(db.Boolean, default=False)
+    failed = db.Column(db.Boolean, default=False) 
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     notes = db.relationship('Note', backref='task', lazy=True)
     reminders = db.relationship('Reminder', backref='task', lazy=True)
     
+    def __repr__(self):
+        return f'<Task {self.title}>'
+    
 #define reminder model
 class Reminder(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    task_id = db.Column(db.Integer, db.ForeignKey('task.id'), nullable=False)
     reminder_time = db.Column(db.DateTime, nullable=False)
+    message = db.Column(db.String(255), nullable=False)
+    task_id = db.Column(db.Integer, db.ForeignKey('task.id'), nullable=False)
+
 
 #define note model
 class Note(db.Model):

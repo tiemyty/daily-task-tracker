@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Task Manager</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
+
 <body>
     <div class="container">
         <h1>Create Task</h1>
@@ -51,6 +53,17 @@
             <input type="submit" value="Update Task">
         </form>
 
+        <!--creating a reminder-->
+        <h1>Set Reminder</h1>
+        <form id="reminderForm">
+            <input type="hidden" id="task-id" name="task_id">
+            <label for="reminder-time">Reminder Time:</label>
+            <input type="datetime-local" id="reminder-time" name="reminder_time" required><br>
+            <label for="reminder-message">Message:</label>
+            <textarea id="reminder-message" name="message" required></textarea><br>
+            <input type="submit" value="Set Reminder">
+        </form>
+
         <h1>Task Notes</h1>
         <div id="notesSection">
             <form id="noteForm">
@@ -64,8 +77,29 @@
         <h1>Task List</h1>
         <ul id="taskList">
             <!--tasks will be populated here-->
+            {% for task in tasks %}
+            <li>
+                <div>
+                    <strong>{{ task.name }}</strong><br>
+                    Due Date: {{ task.due_date }}<br>
+                    Priority: {{ task.priority }}<br>
+                    Category: {{ task.category }}<br>
+                    {% if task.completed %}Completed{% else %}Pending{% endif %}<br>
+                    {% if task.failed %}Failed{% endif %}<br>
+                    <form action="{{ url_for('update_task', task_id=task.id) }}" method="POST">
+                        <input type="hidden" name="task_id" value="{{ task.id }}">
+                        <input type="checkbox" name="completed" {% if task.completed %} checked {% endif %}>
+                        <label for="completed">Completed</label>
+                        <input type="checkbox" name="failed" {% if task.failed %} checked {% endif %}>
+                        <label for="failed">Failed</label>
+                        <input type="submit" value="Update Task">
+                    </form>
+                </div>
+            </li>
+            {% endfor %}
         </ul>
     </div>
     <script src="{{ url_for('static', filename='app.js') }}"></script>
 </body>
+
 </html>

@@ -193,6 +193,58 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    //load reminders
+    async function loadReminders(taskId) {
+        try {
+            const response = await fetch(`/get_reminders/${taskId}`);
+            const reminders = await response.json();
+
+            const reminderList = document.getElementById('reminderList');
+            reminderList.innerHTML = '';
+            reminders.forEach(reminder => {
+                const li = document.createElement('li');
+                li.textContent = `${reminder.reminder_time} - ${reminder.message}`;
+                reminderList.appendChild(li);
+            });
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Failed to load reminders');
+        }
+    }
+
+    //reminder form submission
+    document.getElementById('reminderForm').addEventListener('submit', async function (event) {
+        event.preventDefault();
+        const taskId = document.getElementById('task-id').value;
+        const formData = {
+            task_id: taskId,
+            reminder_time: document.getElementById('reminder-time').value,
+            message: document.getElementById('reminder-message').value
+        };
+
+        try {
+            const response = await fetch('/create_reminder', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData),
+            });
+
+            if (response.status === 201) {
+                alert('Reminder set successfully');
+                loadReminders(taskId);
+                document.getElementById('reminderForm').reset();
+            } else {
+                alert('Failed to set reminder');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Failed to set reminder');
+        }
+    });
+
+
     //event listeners
     document.getElementById('editTaskForm').addEventListener('submit', editTask);
     document.getElementById('noteForm').addEventListener('submit', addNote);
