@@ -30,7 +30,6 @@ document.addEventListener('DOMContentLoaded', function () {
             console.log("Response status:", response.status);//debug
 
             //redirect to login page if not logged in 
-            //This may have been my primary issue that login is required failing to create tasks without me knowing.
             if (response.redirected) {
                 alert('You are not logged in. Redirecting to login page.');
                 window.location.href = response.url;

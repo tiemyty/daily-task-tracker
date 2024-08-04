@@ -135,7 +135,7 @@ def create_app():
         due_date = request.form.get('due_date')
         priority = request.form.get('priority')
         category = request.form.get('category')
-        print(f"Name: {name}, Due Date: {due_date}, Priority: {priority}, Category: {category}")
+        print(f"Name: {name}, Due Date: {due_date}, Priority: {priority}, Category: {category}")#debug
 
         new_task = Task(name=name, due_date=due_date, priority=priority, category=category, user_id=current_user.id)
 
@@ -187,14 +187,7 @@ def create_app():
         if not task or task.user_id != current_user.id:
             return jsonify({'message': 'Task not found'}), 404
 
-        task_data = {
-            'id': task.id,
-            'name': task.name,
-            'due_date': task.due_date.isoformat(),
-            'priority': task.priority,
-            'category': task.category,
-            'completed': task.completed
-        }
+        task_data = {'id': task.id,'name': task.name,'due_date': task.due_date.isoformat(),'priority': task.priority,'category': task.category,'completed': task.completed}
         return jsonify(task_data), 200
 
     #route for adding a note to a task
