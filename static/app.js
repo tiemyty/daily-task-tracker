@@ -13,7 +13,6 @@ document.addEventListener('DOMContentLoaded', function () {
             due_date: document.getElementById('due_date').value,
             priority: document.getElementById('priority').value,
             category: document.getElementById('category').value,
-            user_id: 1,
         };
 
         console.log('Form data:', formData);//debug
@@ -149,6 +148,7 @@ document.addEventListener('DOMContentLoaded', function () {
             document.getElementById('edit-priority').value = task.priority;
             document.getElementById('edit-category').value = task.category;
             document.getElementById('edit-completed').checked = task.completed;
+            document.getElementById('editTaskForm').action = `/edit_task/${task.id}`;
         } catch (error) {
             console.error('Error:', error);
             alert('Failed to load task details');
@@ -160,6 +160,8 @@ document.addEventListener('DOMContentLoaded', function () {
         try {
             const response = await fetch(`/delete_task/${taskId}`, {
                 method: 'DELETE',
+                headers: {
+                },
             });
 
             if (response.status === 200) {

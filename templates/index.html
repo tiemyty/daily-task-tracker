@@ -11,7 +11,7 @@
 <body>
     <div class="container">
         <h1>Create Task</h1>
-        <form id="taskForm">
+        <form id="taskForm" action="{{ url_for('create_task') }}" method="post">
             <label for="name">Task Name:</label>
             <input type="text" id="name" name="name" required><br>
             <label for="due_date">Due Date:</label>
@@ -31,7 +31,7 @@
         </form>
 
         <h1>Edit Task</h1>
-        <form id="editTaskForm">
+        <form id="editTaskForm" method="post">
             <input type="hidden" id="edit-task-id" name="task_id">
             <label for="edit-name">Task Name:</label>
             <input type="text" id="edit-name" name="name" required><br>
@@ -53,9 +53,8 @@
             <input type="submit" value="Update Task">
         </form>
 
-        <!--creating a reminder-->
         <h1>Set Reminder</h1>
-        <form id="reminderForm">
+        <form id="reminderForm" action="{{ url_for('create_reminder') }}" method="post">
             <input type="hidden" id="task-id" name="task_id">
             <label for="reminder-time">Reminder Time:</label>
             <input type="datetime-local" id="reminder-time" name="reminder_time" required><br>
@@ -63,41 +62,35 @@
             <textarea id="reminder-message" name="message" required></textarea><br>
             <input type="submit" value="Set Reminder">
         </form>
+    </div>
 
-        <h1>Task Notes</h1>
-        <div id="notesSection">
-            <form id="noteForm">
-                <label for="noteContent">Add Note:</label>
-                <textarea id="noteContent" name="content" required></textarea><br>
-                <input type="submit" value="Add Note">
-            </form>
-            <ul id="notesList"></ul>
-        </div>
+    <h1>Task List</h1>
+    <ul id="taskList">
+        <!--tasks will be populated here-->
+        {% for task in tasks %}
+        <li>
+            <div>
+                <strong>{{ task.name }}</strong><br>
+                Due Date: {{ task.due_date }}<br>
+                Priority: {{ task.priority }}<br>
+                Category: {{ task.category }}<br>
+                {% if task.completed %}Completed{% else %}Pending{% endif %}<br>
+                {% if task.failed %}Failed{% endif %}<br>
+                <form action="{{ url_for('update_task', task_id=task.id) }}" method="post">
+                    <!-- form fields here -->
+                    <input type="submit" value="Update Task">
+                </form>
+                <form id="noteForm" action="{{ url_for('add_note', task_id=task.id) }}" method="post">
+                    <input type="hidden" id="note-task-id" name="task_id" value="{{ task.id }}">
+                    <label for="noteContent">Add Note:</label>
+                    <textarea id="noteContent" name="content" required></textarea><br>
+                    <input type="submit" value="Add Note">
+                </form>
+            </div>
+        </li>
+        {% endfor %}
 
-        <h1>Task List</h1>
-        <ul id="taskList">
-            <!--tasks will be populated here-->
-            {% for task in tasks %}
-            <li>
-                <div>
-                    <strong>{{ task.name }}</strong><br>
-                    Due Date: {{ task.due_date }}<br>
-                    Priority: {{ task.priority }}<br>
-                    Category: {{ task.category }}<br>
-                    {% if task.completed %}Completed{% else %}Pending{% endif %}<br>
-                    {% if task.failed %}Failed{% endif %}<br>
-                    <form action="{{ url_for('update_task', task_id=task.id) }}" method="POST">
-                        <input type="hidden" name="task_id" value="{{ task.id }}">
-                        <input type="checkbox" name="completed" {% if task.completed %} checked {% endif %}>
-                        <label for="completed">Completed</label>
-                        <input type="checkbox" name="failed" {% if task.failed %} checked {% endif %}>
-                        <label for="failed">Failed</label>
-                        <input type="submit" value="Update Task">
-                    </form>
-                </div>
-            </li>
-            {% endfor %}
-        </ul>
+    </ul>
     </div>
     <script src="{{ url_for('static', filename='app.js') }}"></script>
 </body>
