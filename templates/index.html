@@ -30,43 +30,51 @@
             <input type="submit" value="Create Task">
         </form>
 
+        {% if task %}
         <h1>Edit Task</h1>
-        <form id="editTaskForm" method="post">
-            <input type="hidden" id="edit-task-id" name="task_id">
+        <form action="{{ url_for('update_task', task_id=task.id) }}" method="post">
+            <input type="hidden" name="task_id" value="{{ task.id }}">
+
             <label for="edit-name">Task Name:</label>
-            <input type="text" id="edit-name" name="name" required><br>
+            <input type="text" id="edit-name" name="name" value="{{ task.name }}" required><br>
+
             <label for="edit-due_date">Due Date:</label>
-            <input type="datetime-local" id="edit-due_date" name="due_date" required><br>
+            <input type="datetime-local" id="edit-due_date" name="due_date"
+                value="{{ task.due_date.strftime('%Y-%m-%dT%H:%M') }}" required><br>
+
             <label for="edit-priority">Priority:</label>
             <select id="edit-priority" name="priority" required>
-                <option value="High">High</option>
-                <option value="Medium">Medium</option>
-                <option value="Low">Low</option>
+                <option value="High" {% if task.priority=='High' %}selected{% endif %}>High</option>
+                <option value="Medium" {% if task.priority=='Medium' %}selected{% endif %}>Medium</option>
+                <option value="Low" {% if task.priority=='Low' %}selected{% endif %}>Low</option>
             </select><br>
+
             <label for="edit-category">Category:</label>
             <select id="edit-category" name="category" required>
-                <option value="Work">Work</option>
-                <option value="Personal">Personal</option>
+                <option value="Work" {% if task.category=='Work' %}selected{% endif %}>Work</option>
+                <option value="Personal" {% if task.category=='Personal' %}selected{% endif %}>Personal</option>
             </select><br>
+
             <label for="edit-completed">Completed:</label>
-            <input type="checkbox" id="edit-completed" name="completed"><br>
+            <input type="checkbox" id="edit-completed" name="completed" {% if task.completed %}checked{% endif %}><br>
+
             <input type="submit" value="Update Task">
         </form>
+        {% endif %}
 
         <h1>Set Reminder</h1>
         <form id="reminderForm" action="{{ url_for('create_reminder') }}" method="post">
-            <input type="hidden" id="task-id" name="task_id">
             <label for="reminder-time">Reminder Time:</label>
             <input type="datetime-local" id="reminder-time" name="reminder_time" required><br>
             <label for="reminder-message">Message:</label>
             <textarea id="reminder-message" name="message" required></textarea><br>
             <input type="submit" value="Set Reminder">
         </form>
+
     </div>
 
     <h1>Task List</h1>
     <ul id="taskList">
-        <!--tasks will be populated here-->
         {% for task in tasks %}
         <li>
             <div>
@@ -76,23 +84,52 @@
                 Category: {{ task.category }}<br>
                 {% if task.completed %}Completed{% else %}Pending{% endif %}<br>
                 {% if task.failed %}Failed{% endif %}<br>
-                <form action="{{ url_for('update_task', task_id=task.id) }}" method="post">
-                    <!-- form fields here -->
-                    <input type="submit" value="Update Task">
+                <form action="{{ url_for('edit_task', task_id=task.id) }}" method="get">
+                    <input type="submit" value="Edit Task">
                 </form>
-                <form id="noteForm" action="{{ url_for('add_note', task_id=task.id) }}" method="post">
-                    <input type="hidden" id="note-task-id" name="task_id" value="{{ task.id }}">
+                <form action="{{ url_for('delete_task', task_id=task.id) }}" method="post" style="display:inline;">
+                    <input type="hidden" name="task_id" value="{{ task.id }}">
+                    <input type="submit" value="Delete Task">
+                </form>
+
+                <!-- notes section, displays underneath associated task -->
+                <h3>Notes:</h3>
+                <ul>
+                    {% if task.notes %}
+                        {% for note in task.notes %}
+                            <li>{{ note.content }}</li>
+                        {% endfor %}
+                    {% else %}
+                        <li>No notes available.</li>
+                    {% endif %}
+                </ul>
+
+                <form action="{{ url_for('add_note', task_id=task.id) }}" method="post">
+                    <input type="hidden" name="task_id" value="{{ task.id }}">
                     <label for="noteContent">Add Note:</label>
                     <textarea id="noteContent" name="content" required></textarea><br>
                     <input type="submit" value="Add Note">
                 </form>
+
+                <!-- reminders section, displays underneath associated task -->
+                <h3>Reminders:</h3>
+                <ul>
+                    {% if reminders %}
+                        {% for reminder in reminders %}
+                            <li>
+                                Reminder Time: {{ reminder.reminder_time }}<br>
+                                Message: {{ reminder.message }}<br>
+                                {% if reminder.notified %}Notified{% else %}Not Notified{% endif %}
+                            </li>
+                        {% endfor %}
+                    {% else %}
+                        <li>No reminders available.</li>
+                    {% endif %}
+                </ul>
             </div>
         </li>
         {% endfor %}
-
     </ul>
-    </div>
-    <script src="{{ url_for('static', filename='app.js') }}"></script>
 </body>
 
 </html>
